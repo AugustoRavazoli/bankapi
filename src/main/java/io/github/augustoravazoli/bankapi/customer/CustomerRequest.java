@@ -21,7 +21,7 @@ record CustomerRequest (
   @NotBlank
   String email,
 
-  @CPF(message = "must be a valid cpf number")
+  @CPF
   @NotBlank
   String cpf,
 

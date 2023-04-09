@@ -1,5 +1,6 @@
 package io.github.augustoravazoli.bankapi.customer;
 
+import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import org.junit.jupiter.api.Test;
@@ -52,6 +53,21 @@ class CustomerServiceTest {
     assertThatThrownBy(() -> customerService.createCustomer(newCustomer))
       .isInstanceOf(CpfTakenException.class);
     verify(customerRepository, never()).save(any(Customer.class));
+  }
+
+  @Test
+  void whenFindCustomer_thenReturnsCustomer() {
+    var customer = CustomerFactory.createEntity();
+    when(customerRepository.findByCpf(anyString())).thenReturn(Optional.of(customer));
+    var findedCustomer = customerService.findCustomer("xxx.xxx.xxx-xx");
+    assertThat(findedCustomer).isEqualTo(customer);
+  }
+
+  @Test
+  void givenCustomerDoesNotExists_whenFindCustomer_threnThrowsCustomerNotFoundException() {
+    when(customerRepository.findByCpf(anyString())).thenReturn(Optional.empty());
+    assertThatThrownBy(() -> customerService.findCustomer("xxx.xxx.xxx-xx"))
+      .isInstanceOf(CustomerNotFoundException.class);
   }
 
 }

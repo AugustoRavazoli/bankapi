@@ -23,4 +23,10 @@ class CustomerService {
     return customerRepository.save(newCustomer);
   }
 
+  public Customer findCustomer(String cpf) {
+    return customerRepository
+      .findByCpf(cpf)
+      .orElseThrow(CustomerNotFoundException::new);
+  }
+
 }

@@ -1,6 +1,6 @@
 package io.github.augustoravazoli.bankapi.customer;
 
-import java.util.regex.Pattern;
+import java.net.URI;
 import static org.hamcrest.Matchers.endsWith;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -11,13 +11,18 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.restdocs.RestDocumentationContextProvider;
 import org.springframework.restdocs.RestDocumentationExtension;
+import org.springframework.restdocs.operation.OperationRequest;
+import org.springframework.restdocs.operation.OperationRequestFactory;
+import org.springframework.restdocs.operation.OperationResponse;
+import org.springframework.restdocs.operation.OperationResponseFactory;
+import org.springframework.restdocs.operation.preprocess.OperationPreprocessor;
 import org.springframework.restdocs.payload.RequestFieldsSnippet;
 
 import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.replacePattern;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.modifyUris;
 
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -25,14 +30,17 @@ import org.springframework.web.context.WebApplicationContext;
 import static org.springframework.http.HttpHeaders.LOCATION;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import static org.mockito.Mockito.when;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import io.github.augustoravazoli.bankapi.ConstrainedFields;
 import io.github.augustoravazoli.bankapi.GlobalExceptionHandler.ErrorResponse;
 
@@ -51,14 +59,19 @@ class CustomerControllerTest {
 
   @BeforeEach
   void setUp(WebApplicationContext context, RestDocumentationContextProvider provider) {
-    var cpfPattern = Pattern.compile("\\\"((\\d{11})|((\\d{3}[-.\\/]){3}\\d{2}))\\\"", Pattern.MULTILINE);
-    var replacement = "xxx.xxx.xxx-xx";
-    mvc = MockMvcBuilders.webAppContextSetup(context)
+    var preprocessors = new OperationPreprocessor[] {
+      modifyUris().host("example.com").removePort(),
+      prettyPrint(),
+      hideCpf()
+    };
+    mvc = MockMvcBuilders
+      .webAppContextSetup(context)
       .apply(documentationConfiguration(provider)
         .operationPreprocessors()
-        .withRequestDefaults(prettyPrint(), replacePattern(cpfPattern, replacement))
-        .withResponseDefaults(prettyPrint(), replacePattern(cpfPattern, replacement))
+        .withRequestDefaults(preprocessors)
+        .withResponseDefaults(preprocessors)
       )
+      .alwaysDo(print())
       .build();
   }
 
@@ -83,7 +96,7 @@ class CustomerControllerTest {
   @Test
   void givenInvalidRequest_whenCreateCustomer_thenReturns422AndErrorInfo() throws Exception {
     var invalidCustomer = CustomerFactory.createRequestMissingName();
-    var errorInfo = new ErrorResponse("validation errors");
+    var errorInfo = new ErrorResponse("validation errors on your request body");
     mvc.perform(post("/api/v1/customers")
       .content(mapper.writeValueAsString(invalidCustomer))
       .contentType(APPLICATION_JSON)
@@ -95,6 +108,29 @@ class CustomerControllerTest {
     .andDo(document("customer/error"));
   }
 
+  @Test
+  void whenFindCustomer_thenReturns200AndCustomer() throws Exception {
+    var findedCustomer = CustomerFactory.createEntity();
+    var returnedCustomer = CustomerFactory.createResponse();
+    when(customerService.findCustomer(anyString())).thenReturn(findedCustomer);
+    mvc.perform(get("/api/v1/customers/{cpf}", findedCustomer.getCpf()))
+      .andExpectAll(
+        status().isOk(),
+        content().json(mapper.writeValueAsString(returnedCustomer))
+      )
+      .andDo(document("customer/find"));
+  }
+
+  @Test
+  void givenInvalidCpf_whenFindCustomer_thenReturns422AndErrorInfo() throws Exception {
+    var errorInfo = new ErrorResponse("validation errors on your request query parameters");
+    mvc.perform(get("/api/v1/customers/{cpf}", "000.000.000-00"))
+      .andExpectAll(
+        status().isUnprocessableEntity(),
+        content().json(mapper.writeValueAsString(errorInfo))
+      );
+  }
+
   private RequestFieldsSnippet customerSnippet() {
     var constrainedFields = new ConstrainedFields(CustomerRequest.class);
     return requestFields(
@@ -103,6 +139,44 @@ class CustomerControllerTest {
       constrainedFields.withPath("cpf").description("Customer's CPF"),
       constrainedFields.withPath("birthDate").description("Customer's date of birth")
     );
+  }
+
+  private static OperationPreprocessor hideCpf() {
+    return new OperationPreprocessor() {
+
+      private static final String CPF_PATTERN = "((\\d{11})|((\\d{3}[-.\\/]){3}\\d{2}))";
+      private static final String REPLACEMENT = "xxx.xxx.xxx-xx";
+
+      @Override
+      public OperationRequest preprocess(OperationRequest request) {
+        return new OperationRequestFactory().create(
+          replaceCpf(request.getUri()),
+          request.getMethod(),
+          replaceCpf(request.getContentAsString()),
+          request.getHeaders(),
+          request.getParts(),
+          request.getCookies()
+        );
+      }
+
+      @Override
+      public OperationResponse preprocess(OperationResponse response) {
+        return new OperationResponseFactory().createFrom(
+          response,
+          replaceCpf(response.getContentAsString())
+        );
+      }
+
+      private URI replaceCpf(URI uri) {
+        var path = uri.toString().replaceAll(CPF_PATTERN, REPLACEMENT);
+        return URI.create(path);
+      }
+
+      private byte[] replaceCpf(String content) {
+        return content.replaceAll(CPF_PATTERN, REPLACEMENT).getBytes();
+      }
+
+    };
   }
 
 }
