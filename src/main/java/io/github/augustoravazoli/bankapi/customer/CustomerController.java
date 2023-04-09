@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -28,6 +29,7 @@ class CustomerController {
     this.customerMapper = customerMapper;
   }
 
+  @Validated(OnCreate.class)
   @PostMapping
   public ResponseEntity<CustomerResponse> createCustomer(@Valid @RequestBody CustomerRequest newCustomer) {
     var savedCustomer = Stream.of(newCustomer)
@@ -52,6 +54,21 @@ class CustomerController {
       .findFirst()
       .get();
     return ResponseEntity.ok().body(findedCustomer);
+  }
+
+  @Validated(OnEdit.class)
+  @PutMapping("/{cpf}")
+  public ResponseEntity<CustomerResponse> editCustomer(
+    @CPF @PathVariable String cpf,
+    @Valid @RequestBody CustomerRequest newCustomer
+  ) {
+    var editedCustomer = Stream.of(newCustomer)
+      .map(customerMapper::toEntity)
+      .map(customer -> customerService.editCustomer(cpf, customer))
+      .map(customerMapper::toResponse)
+      .findFirst()
+      .get();
+    return ResponseEntity.ok().body(editedCustomer);
   }
 
 }

@@ -17,12 +17,20 @@ final class CustomerFactory {
     return new CustomerRequest(NAME, EMAIL, CPF, BIRTH_DATE);
   }
 
+  public static CustomerRequest createRequestMissingCpf() {
+    return new CustomerRequest(NAME, EMAIL, null, BIRTH_DATE);
+  }
+
   public static CustomerRequest createRequestMissingName() {
     return new CustomerRequest("", EMAIL, CPF, BIRTH_DATE);
   }
 
   public static Customer createEntity() {
     return new Customer(ID, NAME, EMAIL, CPF, BIRTH_DATE);
+  }
+
+  public static Customer createDistinctEntity() {
+    return new Customer(ID, "edited", "edited@example.com", CPF, LocalDate.of(2002, 2, 2));
   }
 
   public static CustomerResponse createResponse() {

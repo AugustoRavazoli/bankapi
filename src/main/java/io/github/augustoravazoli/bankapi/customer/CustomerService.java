@@ -29,4 +29,19 @@ class CustomerService {
       .orElseThrow(CustomerNotFoundException::new);
   }
 
+  public Customer editCustomer(String cpf, Customer newCustomer) {
+    var customer = customerRepository
+      .findByCpf(cpf)
+      .orElseThrow(CustomerNotFoundException::new);
+    var emailExists = customerRepository.existsByEmail(newCustomer.getEmail());
+    var emailChanged = !customer.getEmail().equals(newCustomer.getEmail());
+    if (emailChanged && emailExists) {
+      throw new EmailTakenException();
+    }
+    customer.setName(newCustomer.getName());
+    customer.setEmail(newCustomer.getEmail());
+    customer.setBirthDate(newCustomer.getBirthDate());
+    return customerRepository.save(customer);
+  }
+
 }

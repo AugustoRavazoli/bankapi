@@ -70,4 +70,36 @@ class CustomerServiceTest {
       .isInstanceOf(CustomerNotFoundException.class);
   }
 
+  @Test
+  void whenEditCustomer_thenReturnsEditedCustomer() {
+    var oldCustomer = CustomerFactory.createEntity();
+    var newCustomer = CustomerFactory.createDistinctEntity();
+    when(customerRepository.findByCpf(anyString())).thenReturn(Optional.of(oldCustomer));
+    when(customerRepository.existsByEmail(anyString())).thenReturn(false);
+    when(customerRepository.save(any(Customer.class))).then(returnsFirstArg());
+    var editedCustomer = customerService.editCustomer("xxx.xxx.xxx-xx", newCustomer);
+    assertThat(editedCustomer).usingRecursiveComparison().isEqualTo(newCustomer);
+    verify(customerRepository, times(1)).save(any(Customer.class));
+  }
+
+  @Test
+  void givenCustomerDoesNotExists_whenEditCustomer_thenThrowsCustomerNotFoundException() {
+    var oldCustomer = CustomerFactory.createEntity();
+    when(customerRepository.findByCpf(anyString())).thenReturn(Optional.empty());
+    assertThatThrownBy(() -> customerService.editCustomer("xxx.xxx.xxx-xx", oldCustomer))
+      .isInstanceOf(CustomerNotFoundException.class);
+    verify(customerRepository, never()).save(any(Customer.class));
+  }
+
+  @Test
+  void givenEmailTaken_whenEditCustomer_thenThrowsEmailTakenException() {
+    var oldCustomer = CustomerFactory.createEntity();
+    var newCustomer = CustomerFactory.createDistinctEntity();
+    when(customerRepository.findByCpf(anyString())).thenReturn(Optional.of(oldCustomer));
+    when(customerRepository.existsByEmail(anyString())).thenReturn(true);
+    assertThatThrownBy(() -> customerService.editCustomer("xxx.xxx.xxx-xx", newCustomer))
+      .isInstanceOf(EmailTakenException.class);
+    verify(customerRepository, never()).save(any(Customer.class));
+  }
+
 }

@@ -31,8 +31,8 @@ import static org.springframework.http.HttpHeaders.LOCATION;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -129,6 +129,23 @@ class CustomerControllerTest {
         status().isUnprocessableEntity(),
         content().json(mapper.writeValueAsString(errorInfo))
       );
+  }
+
+  @Test
+  void whenEditCustomer_thenReturns200AndCustomer() throws Exception {
+    var customer = CustomerFactory.createRequestMissingCpf();
+    var editedCustomer = CustomerFactory.createEntity();
+    var returnedCustomer = CustomerFactory.createResponse();
+    when(customerService.editCustomer(anyString(), any(Customer.class))).thenReturn(editedCustomer);
+    mvc.perform(put("/api/v1/customers/{cpf}", editedCustomer.getCpf())
+      .contentType(APPLICATION_JSON)
+      .content(mapper.writeValueAsString(customer))
+    )
+    .andExpectAll(
+      status().isOk(),
+      content().json(mapper.writeValueAsString(returnedCustomer))
+    )
+    .andDo(document("customer/edit"));
   }
 
   private RequestFieldsSnippet customerSnippet() {
