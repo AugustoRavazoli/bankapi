@@ -32,6 +32,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -39,6 +40,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import io.github.augustoravazoli.bankapi.ConstrainedFields;
@@ -146,6 +148,18 @@ class CustomerControllerTest {
       content().json(mapper.writeValueAsString(returnedCustomer))
     )
     .andDo(document("customer/edit"));
+  }
+
+  @Test
+  void whenRemoveCustomer_thenReturns204() throws Exception {
+    var customer = CustomerFactory.createEntity();
+    doNothing().when(customerService).removeCustomer(anyString());
+    mvc.perform(delete("/api/v1/customers/{cpf}", customer.getCpf()))
+      .andExpectAll(
+        status().isNoContent(),
+        content().string("")
+      )
+      .andDo(document("customer/remove"));
   }
 
   private RequestFieldsSnippet customerSnippet() {

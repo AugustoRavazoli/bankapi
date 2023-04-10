@@ -102,4 +102,19 @@ class CustomerServiceTest {
     verify(customerRepository, never()).save(any(Customer.class));
   }
 
+  @Test
+  void whenRemoveCustomer_thenReturnsNothing() {
+    when(customerRepository.existsByCpf(anyString())).thenReturn(true);
+    customerService.removeCustomer("xxx.xxx.xxx-xx");
+    verify(customerRepository, times(1)).deleteByCpf(anyString());
+  }
+
+  @Test
+  void givenCustomerDoesNotExists_whenRemoveCustomer_thenThrowsCustomerNotFoundException() {
+    when(customerRepository.existsByCpf(anyString())).thenReturn(false);
+    assertThatThrownBy(() -> customerService.removeCustomer("xxx.xxx.xxx-xx"))
+      .isInstanceOf(CustomerNotFoundException.class);
+    verify(customerRepository, never()).deleteByCpf(anyString());
+  }
+
 }

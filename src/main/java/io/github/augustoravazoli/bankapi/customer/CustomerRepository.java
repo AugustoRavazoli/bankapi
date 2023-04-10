@@ -13,4 +13,6 @@ interface CustomerRepository extends JpaRepository<Customer, Long> {
 
   boolean existsByCpf(String cpf);
 
+  void deleteByCpf(String cpf);
+
 }

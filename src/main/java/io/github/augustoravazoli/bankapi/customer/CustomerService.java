@@ -44,4 +44,11 @@ class CustomerService {
     return customerRepository.save(customer);
   }
 
+  public void removeCustomer(String cpf) {
+    if (!customerRepository.existsByCpf(cpf)) {
+      throw new CustomerNotFoundException();
+    }
+    customerRepository.deleteByCpf(cpf);
+  }
+
 }

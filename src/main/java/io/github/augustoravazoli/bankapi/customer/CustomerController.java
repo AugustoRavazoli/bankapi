@@ -4,6 +4,7 @@ import java.util.stream.Stream;
 import org.hibernate.validator.constraints.br.CPF;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -69,6 +70,12 @@ class CustomerController {
       .findFirst()
       .get();
     return ResponseEntity.ok().body(editedCustomer);
+  }
+
+  @DeleteMapping("/{cpf}")
+  public ResponseEntity<Void> removeCustomer(@CPF @PathVariable String cpf) {
+    customerService.removeCustomer(cpf);
+    return ResponseEntity.noContent().build();
   }
 
 }
