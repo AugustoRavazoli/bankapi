@@ -23,6 +23,7 @@ import static org.springframework.restdocs.operation.preprocess.Preprocessors.pr
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.modifyUris;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.modifyHeaders;
 
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -45,6 +46,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import io.github.augustoravazoli.bankapi.ConstrainedFields;
 import io.github.augustoravazoli.bankapi.GlobalExceptionHandler.ErrorResponse;
+import jakarta.validation.constraints.Null;
 
 @Import(CustomerMapperImpl.class)
 @ExtendWith(RestDocumentationExtension.class)
@@ -63,6 +65,7 @@ class CustomerControllerTest {
   void setUp(WebApplicationContext context, RestDocumentationContextProvider provider) {
     var preprocessors = new OperationPreprocessor[] {
       modifyUris().host("example.com").removePort(),
+      modifyHeaders().remove("Content-Disposition"),
       prettyPrint(),
       hideCpf()
     };
@@ -167,7 +170,7 @@ class CustomerControllerTest {
     return requestFields(
       constrainedFields.withPath("name").description("Customer's name"),
       constrainedFields.withPath("email").description("Customer's email"),
-      constrainedFields.withPath("cpf").description("Customer's CPF"),
+      constrainedFields.withPathHiddenConstraints("cpf", Null.class).description("Customer's CPF"),
       constrainedFields.withPath("birthDate").description("Customer's date of birth")
     );
   }
