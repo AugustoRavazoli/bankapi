@@ -26,7 +26,6 @@ import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import jakarta.validation.constraints.Null;
 import io.github.augustoravazoli.bankapi.ControllerTestTemplate;
 
 @Import(CustomerMapperImpl.class)
@@ -173,7 +172,7 @@ class CustomerControllerTest extends ControllerTestTemplate {
     return requestFields(
       fields.path("name").description("Customer's name"),
       fields.path("email").description("Customer's email"),
-      fields.path("cpf", Null.class).description("Customer's CPF"),
+      fields.pathExcludingGroups("cpf", OnEdit.class).description("Customer's CPF"),
       fields.path("birthDate").description("Customer's date of birth")
     );
   }

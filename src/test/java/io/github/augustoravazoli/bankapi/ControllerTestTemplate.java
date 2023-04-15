@@ -1,12 +1,13 @@
 package io.github.augustoravazoli.bankapi;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 import static java.util.stream.Collectors.joining;
 import java.net.URI;
+
 import net.datafaker.Faker;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.restdocs.RestDocumentationContextProvider;
 import org.springframework.restdocs.RestDocumentationExtension;
@@ -24,7 +25,7 @@ import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.docu
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.modifyUris;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.modifyHeaders;
 
-import org.springframework.restdocs.constraints.ConstraintDescriptionResolver;
+import org.springframework.restdocs.constraints.Constraint;
 import org.springframework.restdocs.constraints.ConstraintDescriptions;
 import org.springframework.restdocs.constraints.ResourceBundleConstraintDescriptionResolver;
 import org.springframework.test.web.servlet.MockMvc;
@@ -67,28 +68,42 @@ public abstract class ControllerTestTemplate {
 
   public static class ConstrainedFields {
 
-    private final Class<?> clazz;
+    private final ConstraintDescriptions constraints;
+    private final List<Class<?>> groups;
 
     public ConstrainedFields(Class<?> clazz) {
-      this.clazz = clazz;
+      groups = new ArrayList<>();
+      constraints = new ConstraintDescriptions(clazz, resolver(groups));
     }
 
-    public FieldDescriptor path(String path, Class<?>... hiddenConstraints) {
-      var constraints = new ConstraintDescriptions(clazz, fieldResolver(hiddenConstraints));
+    public FieldDescriptor pathExcludingGroups(String path, Class<?>... excludedGroups) {
+      groups.addAll(List.of(excludedGroups));
+      return path(path);
+    }
+
+    public FieldDescriptor path(String path) {
       var description = constraints.descriptionsForProperty(path).stream()
         .filter(s -> !s.isEmpty())
         .collect(joining(". "));
       return fieldWithPath(path).attributes(key("constraints").value(description));
     }
 
-    private ConstraintDescriptionResolver fieldResolver(Class<?>... hiddenConstraints) {
-      var resolver = new ResourceBundleConstraintDescriptionResolver();
-      return constraint -> {
-        var constraintExists = Arrays.stream(hiddenConstraints)
-          .filter(hc -> hc.getName().equals(constraint.getName()))
-          .findFirst()
-          .isPresent();
-        return constraintExists ? "" : resolver.resolveDescription(constraint);
+    private static ResourceBundleConstraintDescriptionResolver resolver(List<Class<?>> groups) {
+      return new ResourceBundleConstraintDescriptionResolver() {
+
+        @Override
+        public String resolveDescription(Constraint constraint) {
+          var description = super.resolveDescription(constraint);
+          if (!groups.isEmpty()) {
+            var constraintGroups = (Class<?>[]) constraint.getConfiguration().get("groups");
+            if (List.of(constraintGroups).containsAll(groups)) {
+              description = "";
+              groups.clear();
+            }
+          }
+          return description;
+        }
+
       };
     }
 
