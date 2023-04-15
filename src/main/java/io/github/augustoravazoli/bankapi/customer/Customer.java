@@ -1,6 +1,7 @@
 package io.github.augustoravazoli.bankapi.customer;
 
 import java.time.LocalDate;
+import org.hibernate.annotations.NaturalId;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -20,6 +21,7 @@ class Customer {
   @Column(nullable = false, unique = true)
   private String email;
 
+  @NaturalId
   @Column(nullable = false, unique = true)
   private String cpf;
 
@@ -40,10 +42,6 @@ class Customer {
     return id;
   }
 
-  public void setId(Long id) {
-    this.id = id;
-  }
-
   public String getName() {
     return name;
   }
@@ -62,10 +60,6 @@ class Customer {
 
   public String getCpf() {
     return cpf;
-  }
-
-  public void setCpf(String cpf) {
-    this.cpf = cpf;
   }
 
   public LocalDate getBirthDate() {

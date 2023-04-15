@@ -13,10 +13,10 @@ import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Path;
 
 @ControllerAdvice
-public class GlobalExceptionHandler {
+class GlobalExceptionHandler {
 
   @JsonInclude(JsonInclude.Include.NON_NULL)
-  public static record ErrorResponse(String message, List<ErrorDetails> errors) {
+  private static record ErrorResponse(String message, List<ErrorDetails> errors) {
 
     public ErrorResponse(String message) {
       this(message, null);

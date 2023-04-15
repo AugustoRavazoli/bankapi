@@ -1,6 +1,7 @@
 package io.github.augustoravazoli.bankapi.customer;
 
 import java.time.LocalDate;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.endsWith;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -19,14 +20,14 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import io.github.augustoravazoli.bankapi.ControllerTestTemplate;
-import io.github.augustoravazoli.bankapi.GlobalExceptionHandler.ErrorResponse;
 import jakarta.validation.constraints.Null;
+import io.github.augustoravazoli.bankapi.ControllerTestTemplate;
 
 @Import(CustomerMapperImpl.class)
 @WebMvcTest(CustomerController.class)
@@ -69,7 +70,6 @@ class CustomerControllerTest extends ControllerTestTemplate {
     var invalidCustomer = new CustomerRequest(
       "", "customer@example.com", CPF, LocalDate.of(1990, 9, 9)
     );
-    var errorInfo = new ErrorResponse("validation errors on your request body");
     // when
     mvc.perform(post("/api/v1/customers")
       .content(toJson(invalidCustomer))
@@ -78,7 +78,7 @@ class CustomerControllerTest extends ControllerTestTemplate {
     // then
     .andExpectAll(
       status().isUnprocessableEntity(),
-      content().json(toJson(errorInfo))
+      jsonPath("$.message", is("validation errors on your request body"))
     )
     .andDo(document("customer/error"));
   }
@@ -109,15 +109,15 @@ class CustomerControllerTest extends ControllerTestTemplate {
   @Test
   void givenInvalidCpf_whenFindCustomer_thenReturns422AndErrorInfo() throws Exception {
     // given
-    var errorInfo = new ErrorResponse("validation errors on your request query parameters");
+    var cpf = "000.000.000-00";
     // when
     mvc.perform(
-      get("/api/v1/customers/{cpf}", "000.000.000-00")
+      get("/api/v1/customers/{cpf}", cpf)
     )
     // then
     .andExpectAll(
       status().isUnprocessableEntity(),
-      content().json(toJson(errorInfo))
+      jsonPath("$.message", is("validation errors on your request query parameters"))
     );
   }
 
@@ -163,7 +163,7 @@ class CustomerControllerTest extends ControllerTestTemplate {
     // then
     .andExpectAll(
       status().isNoContent(),
-      content().string("")
+      jsonPath("$").doesNotExist()
     )
     .andDo(document("customer/remove"));
   }
