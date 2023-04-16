@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-class CustomerService {
+public class CustomerService {
 
   private final CustomerRepository customerRepository;
 
@@ -13,7 +13,7 @@ class CustomerService {
     this.customerRepository = customerRepository;
   }
 
-  public Customer createCustomer(Customer newCustomer) {
+  protected Customer createCustomer(Customer newCustomer) {
     if (customerRepository.existsByEmail(newCustomer.getEmail())) {
       throw new EmailTakenException();
     }
@@ -29,7 +29,7 @@ class CustomerService {
       .orElseThrow(CustomerNotFoundException::new);
   }
 
-  public Customer editCustomer(String cpf, Customer newCustomer) {
+  protected Customer editCustomer(String cpf, Customer newCustomer) {
     var customer = customerRepository
       .findByCpf(cpf)
       .orElseThrow(CustomerNotFoundException::new);
@@ -44,7 +44,7 @@ class CustomerService {
     return customerRepository.save(customer);
   }
 
-  public void removeCustomer(String cpf) {
+  protected void removeCustomer(String cpf) {
     if (!customerRepository.existsByCpf(cpf)) {
       throw new CustomerNotFoundException();
     }

@@ -9,6 +9,7 @@ import net.datafaker.Faker;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.restdocs.RestDocumentationContextProvider;
 import org.springframework.restdocs.RestDocumentationExtension;
 import org.springframework.restdocs.operation.OperationRequest;
@@ -129,10 +130,22 @@ public abstract class ControllerTestTemplate {
 
       @Override
       public OperationResponse preprocess(OperationResponse response) {
-        return new OperationResponseFactory().createFrom(
-          response,
+        return new OperationResponseFactory().create(
+          response.getStatus(),
+          replaceCpf(response.getHeaders()),
           replaceCpf(response.getContentAsString())
         );
+      }
+
+      private HttpHeaders replaceCpf(HttpHeaders headers) {
+        if (headers.getLocation() != null) {
+          var path = headers.getLocation().toASCIIString().replaceAll(CPF_PATTERN, REPLACEMENT);
+          var newHeaders = new HttpHeaders();
+          newHeaders.addAll(headers);
+          newHeaders.setLocation(URI.create(path));
+          return newHeaders;
+        }
+        return headers;
       }
 
       private URI replaceCpf(URI uri) {

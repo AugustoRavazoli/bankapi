@@ -1,15 +1,21 @@
 package io.github.augustoravazoli.bankapi.customer;
 
 import java.time.LocalDate;
+import java.util.List;
+import java.util.ArrayList;
 import org.hibernate.annotations.NaturalId;
+import io.github.augustoravazoli.bankapi.account.Account;
+import static jakarta.persistence.CascadeType.ALL;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import static jakarta.persistence.FetchType.LAZY;
 import jakarta.persistence.GeneratedValue;
 import static jakarta.persistence.GenerationType.IDENTITY;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 
 @Entity
-class Customer {
+public class Customer {
 
   @Id
   @GeneratedValue(strategy = IDENTITY)
@@ -28,9 +34,12 @@ class Customer {
   @Column(nullable = false)
   private LocalDate birthDate;
 
+  @OneToMany(mappedBy = "owner", cascade = ALL, fetch = LAZY, orphanRemoval = true)
+  private List<Account> accounts = new ArrayList<>();
+
   public Customer() {}
 
-  public Customer(long id, String name, String email, String cpf, LocalDate birthDate) {
+  protected Customer(long id, String name, String email, String cpf, LocalDate birthDate) {
     this.id = id;
     this.name = name;
     this.email = email;
@@ -46,7 +55,7 @@ class Customer {
     return name;
   }
 
-  public void setName(String name) {
+  protected void setName(String name) {
     this.name = name;
   }
 
@@ -54,7 +63,7 @@ class Customer {
     return email;
   }
 
-  public void setEmail(String email) {
+  protected void setEmail(String email) {
     this.email = email;
   }
 
@@ -66,8 +75,16 @@ class Customer {
     return birthDate;
   }
 
-  public void setBirthDate(LocalDate birthDate) {
+  protected void setBirthDate(LocalDate birthDate) {
     this.birthDate = birthDate;
+  }
+
+  public void addAccount(Account account) {
+    accounts.add(account);
+  }
+
+  public void removeAccount(Account account) {
+    accounts.remove(account);
   }
 
 }
