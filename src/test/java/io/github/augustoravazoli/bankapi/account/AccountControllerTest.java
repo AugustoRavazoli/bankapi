@@ -14,12 +14,14 @@ import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.docu
 import static org.springframework.http.HttpHeaders.LOCATION;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 
 import static org.mockito.Mockito.when;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import io.github.augustoravazoli.bankapi.ControllerTestTemplate;
 import io.github.augustoravazoli.bankapi.customer.Customer;
@@ -51,6 +53,25 @@ class AccountControllerTest extends ControllerTestTemplate {
       content().json(toJson(returnedAccount))
     )
     .andDo(document("account/create", accountSnippet()));
+  }
+
+  @Test
+  void whenFindAccount_thenReturns200AndFindedAccount() throws Exception {
+    // given
+    var findedAccount = new Account(1L, "bankname", new Customer());
+    var returnedAccount = new AccountResponse(1L, "bankname", BigDecimal.ZERO, LocalDate.now());
+    // and
+    when(accountService.findAccount(anyString(), anyLong())).thenReturn(findedAccount);
+    // when
+    mvc.perform(
+      get("/api/v1/customers/{cpf}/accounts/{id}", CPF, returnedAccount.id())
+    )
+    // then
+    .andExpectAll(
+      status().isOk(),
+      content().json(toJson(returnedAccount))
+    )
+    .andDo(document("account/find"));
   }
 
   private RequestFieldsSnippet accountSnippet() {

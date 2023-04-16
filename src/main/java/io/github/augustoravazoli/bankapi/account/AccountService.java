@@ -29,4 +29,15 @@ class AccountService {
     return accountRepository.save(account);
   }
 
+  public Account findAccount(String cpf, long id) {
+    var customer = customerService.findCustomer(cpf);
+    var account = accountRepository
+      .findById(id)
+      .orElseThrow(AccountNotFoundException::new);
+    if (customer.getId() != account.getOwner().getId()) {
+      throw new AccountMismatchException();
+    }
+    return account;
+  }
+
 }

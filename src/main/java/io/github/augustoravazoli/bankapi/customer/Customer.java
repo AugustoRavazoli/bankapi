@@ -39,7 +39,7 @@ public class Customer {
 
   public Customer() {}
 
-  protected Customer(long id, String name, String email, String cpf, LocalDate birthDate) {
+  public Customer(long id, String name, String email, String cpf, LocalDate birthDate) {
     this.id = id;
     this.name = name;
     this.email = email;
