@@ -22,17 +22,17 @@ class AccountService {
     this.bankClient = bankClient;
   }
 
-  public Account createAccount(String cpf, AccountRequest newAccount) {
-    var customer = customerService.findCustomer(cpf);
+  public Account createAccount(String ownerCpf, AccountRequest newAccount) {
+    var customer = customerService.findCustomer(ownerCpf);
     var bankName = bankClient.findBankNameByCode(newAccount.bankCode());
     var account = new Account(bankName, customer);
     return accountRepository.save(account);
   }
 
-  public Account findAccount(String cpf, long id) {
-    var customer = customerService.findCustomer(cpf);
+  public Account findAccount(String ownerCpf, long accountId) {
+    var customer = customerService.findCustomer(ownerCpf);
     var account = accountRepository
-      .findById(id)
+      .findById(accountId)
       .orElseThrow(AccountNotFoundException::new);
     if (customer.getId() != account.getOwner().getId()) {
       throw new AccountMismatchException();
@@ -40,10 +40,10 @@ class AccountService {
     return account;
   }
 
-  public Account editAccount(String cpf, long id, AccountRequest newAccount) {
-    var customer = customerService.findCustomer(cpf);
+  public Account editAccount(String ownerCpf, long accountId, AccountRequest newAccount) {
+    var customer = customerService.findCustomer(ownerCpf);
     var account = accountRepository
-      .findById(id)
+      .findById(accountId)
       .orElseThrow(AccountNotFoundException::new);
     if (customer.getId() != account.getOwner().getId()) {
       throw new AccountMismatchException();
@@ -53,10 +53,10 @@ class AccountService {
     return accountRepository.save(account);
   }
 
-  public void removeAccount(String cpf, long id) {
-    var customer = customerService.findCustomer(cpf);
+  public void removeAccount(String ownerCpf, long accountId) {
+    var customer = customerService.findCustomer(ownerCpf);
     var account = accountRepository
-      .findById(id)
+      .findById(accountId)
       .orElseThrow(AccountNotFoundException::new);
     if (customer.getId() != account.getOwner().getId()) {
       throw new AccountMismatchException();

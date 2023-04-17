@@ -32,11 +32,11 @@ class AccountController {
 
   @PostMapping
   public ResponseEntity<AccountResponse> createAccount(
-    @CPF @PathVariable("cpf") String cpf,
+    @CPF @PathVariable("cpf") String ownerCpf,
     @Valid @RequestBody AccountRequest newAccount
   ) {
     var createdAccount = Stream.of(newAccount)
-      .map(account -> accountService.createAccount(cpf, account))
+      .map(account -> accountService.createAccount(ownerCpf, account))
       .map(accountMapper::toResponse)
       .findFirst()
       .get();
@@ -50,10 +50,10 @@ class AccountController {
 
   @GetMapping("/{id}")
   public ResponseEntity<AccountResponse> findAccount(
-    @CPF @PathVariable("cpf") String cpf,
-    @PathVariable("id") long id
+    @CPF @PathVariable("cpf") String ownerCpf,
+    @PathVariable("id") long accountId
   ) {
-    var findedAccount = Stream.of(accountService.findAccount(cpf, id))
+    var findedAccount = Stream.of(accountService.findAccount(ownerCpf, accountId))
       .map(accountMapper::toResponse)
       .findFirst()
       .get();
@@ -62,11 +62,11 @@ class AccountController {
 
   @PutMapping("/{id}")
   public ResponseEntity<AccountResponse> editAccount(
-    @CPF @PathVariable("cpf") String cpf,
-    @PathVariable("id") long id,
+    @CPF @PathVariable("cpf") String ownerCpf,
+    @PathVariable("id") long accountId,
     @Valid @RequestBody AccountRequest newAccount
   ) {
-    var editedAccount = Stream.of(accountService.editAccount(cpf, id, newAccount))
+    var editedAccount = Stream.of(accountService.editAccount(ownerCpf, accountId, newAccount))
       .map(accountMapper::toResponse)
       .findFirst()
       .get();
@@ -75,10 +75,10 @@ class AccountController {
 
   @DeleteMapping("/{id}")
   public ResponseEntity<Void> removeAccount(
-    @CPF @PathVariable("cpf") String cpf,
-    @PathVariable("id") long id
+    @CPF @PathVariable("cpf") String ownerCpf,
+    @PathVariable("id") long accountId
   ) {
-    accountService.removeAccount(cpf, id);
+    accountService.removeAccount(ownerCpf, accountId);
     return ResponseEntity.noContent().build();
   }
 
