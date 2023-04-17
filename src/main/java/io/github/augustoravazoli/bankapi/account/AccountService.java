@@ -53,4 +53,16 @@ class AccountService {
     return accountRepository.save(account);
   }
 
+  public void removeAccount(String cpf, long id) {
+    var customer = customerService.findCustomer(cpf);
+    var account = accountRepository
+      .findById(id)
+      .orElseThrow(AccountNotFoundException::new);
+    if (customer.getId() != account.getOwner().getId()) {
+      throw new AccountMismatchException();
+    }
+    account.setOwner(null);
+    accountRepository.delete(account);
+  }
+
 }

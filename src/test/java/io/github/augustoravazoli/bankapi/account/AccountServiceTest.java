@@ -135,4 +135,46 @@ class AccountServiceTest {
     verify(accountRepository, never()).save(any(Account.class));
   }
 
+  @Test
+  void whenRemoveAccount_thenReturnsNothing() {
+    // given
+    var customer = new Customer();
+    var account = new Account(1L, "bankname", customer);
+    // and
+    when(customerService.findCustomer(anyString())).thenReturn(customer);
+    when(accountRepository.findById(anyLong())).thenReturn(Optional.of(account));
+    // when
+    accountService.removeAccount("xxx.xxx.xxx-xx", 1L);
+    // then
+    verify(accountRepository, times(1)).delete(any(Account.class));
+  }
+
+  @Test
+  void givenNonexistentAccount_whenRemoveAccount_thenThrowsAccountNotFoundException() {
+    // given
+    var customer = new Customer();
+    var nonexistentAccount = Optional.<Account>empty();
+    // and
+    when(customerService.findCustomer(anyString())).thenReturn(customer);
+    when(accountRepository.findById(anyLong())).thenReturn(nonexistentAccount);
+    // then
+    assertThatThrownBy(() -> accountService.removeAccount("xxx.xxx.xxx-xx", 1L))
+      .isInstanceOf(AccountNotFoundException.class);
+    verify(accountRepository, never()).delete(any(Account.class));
+  }
+
+  @Test
+  void givenAccountNotBelongsToCustomer_whenRemoveAccount_thenThrowsAccountMismatchException() {
+    // given
+    var customer = new Customer();
+    var account = new Account(1L, "bankname", new Customer(2L, "", "", "", null));
+    // and
+    when(customerService.findCustomer(anyString())).thenReturn(customer);
+    when(accountRepository.findById(anyLong())).thenReturn(Optional.of(account));
+    // then
+    assertThatThrownBy(() -> accountService.removeAccount("xxx.xxx.xxx-xx", 1L))
+      .isInstanceOf(AccountMismatchException.class);
+    verify(accountRepository, never()).delete(any(Account.class));
+  }
+
 }

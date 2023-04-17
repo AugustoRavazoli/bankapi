@@ -16,11 +16,14 @@ import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -95,6 +98,24 @@ class AccountControllerTest extends ControllerTestTemplate {
       content().json(toJson(returnedAccount))
     )
     .andDo(document("account/edit"));
+  }
+
+  @Test
+  void whenRemoveAccount_thenReturns204() throws Exception {
+    // given
+    var account = new Account(1L, "bankname", new Customer());
+    // and
+    doNothing().when(accountService).removeAccount(anyString(), anyLong());
+    // when
+    mvc.perform(
+      delete("/api/v1/customers/{cpf}/accounts/{id}", CPF, account.getId())
+    )
+    // then
+    .andExpectAll(
+      status().isNoContent(),
+      jsonPath("$").doesNotExist()
+    )
+    .andDo(document("account/remove"));
   }
 
   private RequestFieldsSnippet accountSnippet() {
