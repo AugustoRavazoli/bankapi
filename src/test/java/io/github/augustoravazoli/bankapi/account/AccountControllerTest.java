@@ -15,6 +15,7 @@ import static org.springframework.http.HttpHeaders.LOCATION;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -72,6 +73,28 @@ class AccountControllerTest extends ControllerTestTemplate {
       content().json(toJson(returnedAccount))
     )
     .andDo(document("account/find"));
+  }
+
+  @Test
+  void whenEditAccount_thenReturns200AndEditedAccount() throws Exception {
+    // given
+    var account = new AccountRequest(1);
+    var editedAccount = new Account(1L, "bankname", new Customer());
+    var returnedAccount = new AccountResponse(1L, "bankname", BigDecimal.ZERO, LocalDate.now());
+    // and
+    when(accountService.editAccount(anyString(), anyLong(), any(AccountRequest.class)))
+      .thenReturn(editedAccount);
+    // when
+    mvc.perform(put("/api/v1/customers/{cpf}/accounts/{id}", CPF, returnedAccount.id())
+      .content(toJson(account))
+      .contentType(APPLICATION_JSON)
+    )
+    // then
+    .andExpectAll(
+      status().isOk(),
+      content().json(toJson(returnedAccount))
+    )
+    .andDo(document("account/edit"));
   }
 
   private RequestFieldsSnippet accountSnippet() {

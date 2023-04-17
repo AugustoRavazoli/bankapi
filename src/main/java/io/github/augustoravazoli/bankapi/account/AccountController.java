@@ -9,6 +9,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -56,6 +57,19 @@ class AccountController {
       .findFirst()
       .get();
     return ResponseEntity.ok().body(findedAccount);
+  }
+
+  @PutMapping("/{id}")
+  public ResponseEntity<AccountResponse> editAccount(
+    @CPF @PathVariable("cpf") String cpf,
+    @PathVariable("id") long id,
+    @Valid @RequestBody AccountRequest newAccount
+  ) {
+    var editedAccount = Stream.of(accountService.editAccount(cpf, id, newAccount))
+      .map(accountMapper::toResponse)
+      .findFirst()
+      .get();
+    return ResponseEntity.ok().body(editedAccount);
   }
 
 }

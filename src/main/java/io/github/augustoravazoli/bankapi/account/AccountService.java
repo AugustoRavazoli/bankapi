@@ -40,4 +40,17 @@ class AccountService {
     return account;
   }
 
+  public Account editAccount(String cpf, long id, AccountRequest newAccount) {
+    var customer = customerService.findCustomer(cpf);
+    var account = accountRepository
+      .findById(id)
+      .orElseThrow(AccountNotFoundException::new);
+    if (customer.getId() != account.getOwner().getId()) {
+      throw new AccountMismatchException();
+    }
+    var bankName = bankClient.findBankNameByCode(newAccount.bankCode());
+    account.setBank(bankName);
+    return accountRepository.save(account);
+  }
+
 }
