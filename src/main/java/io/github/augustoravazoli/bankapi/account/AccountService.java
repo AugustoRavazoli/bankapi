@@ -2,35 +2,40 @@ package io.github.augustoravazoli.bankapi.account;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import io.github.augustoravazoli.bankapi.customer.CustomerService;
+import io.github.augustoravazoli.bankapi.customer.CustomerNotFoundException;
+import io.github.augustoravazoli.bankapi.customer.CustomerRepository;
 
 @Service
 class AccountService {
 
   private final AccountRepository accountRepository;
-  private final CustomerService customerService;
+  private final CustomerRepository customerRepository;
   private final BankClient bankClient;
 
   @Autowired
   public AccountService(
     AccountRepository accountRepository,
-    CustomerService customerService,
+    CustomerRepository customerRepository,
     BankClient bankClient
   ) {
     this.accountRepository = accountRepository;
-    this.customerService = customerService;
+    this.customerRepository = customerRepository;
     this.bankClient = bankClient;
   }
 
   public Account createAccount(String ownerCpf, AccountRequest newAccount) {
-    var customer = customerService.findCustomer(ownerCpf);
+    var customer = customerRepository
+      .findByCpf(ownerCpf)
+      .orElseThrow(CustomerNotFoundException::new);
     var bankName = bankClient.findBankNameByCode(newAccount.bankCode());
     var account = new Account(bankName, customer);
     return accountRepository.save(account);
   }
 
   public Account findAccount(String ownerCpf, long accountId) {
-    var customer = customerService.findCustomer(ownerCpf);
+    var customer = customerRepository
+      .findByCpf(ownerCpf)
+      .orElseThrow(CustomerNotFoundException::new);
     var account = accountRepository
       .findById(accountId)
       .orElseThrow(AccountNotFoundException::new);
@@ -41,7 +46,9 @@ class AccountService {
   }
 
   public Account editAccount(String ownerCpf, long accountId, AccountRequest newAccount) {
-    var customer = customerService.findCustomer(ownerCpf);
+    var customer = customerRepository
+      .findByCpf(ownerCpf)
+      .orElseThrow(CustomerNotFoundException::new);
     var account = accountRepository
       .findById(accountId)
       .orElseThrow(AccountNotFoundException::new);
@@ -54,7 +61,9 @@ class AccountService {
   }
 
   public void removeAccount(String ownerCpf, long accountId) {
-    var customer = customerService.findCustomer(ownerCpf);
+    var customer = customerRepository
+      .findByCpf(ownerCpf)
+      .orElseThrow(CustomerNotFoundException::new);
     var account = accountRepository
       .findById(accountId)
       .orElseThrow(AccountNotFoundException::new);

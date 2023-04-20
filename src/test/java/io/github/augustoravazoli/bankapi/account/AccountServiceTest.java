@@ -18,7 +18,8 @@ import static org.mockito.Mockito.times;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import io.github.augustoravazoli.bankapi.customer.Customer;
-import io.github.augustoravazoli.bankapi.customer.CustomerService;
+import io.github.augustoravazoli.bankapi.customer.CustomerNotFoundException;
+import io.github.augustoravazoli.bankapi.customer.CustomerRepository;
 
 @ExtendWith(MockitoExtension.class)
 class AccountServiceTest {
@@ -27,7 +28,7 @@ class AccountServiceTest {
   private AccountRepository accountRepository;
 
   @Mock
-  private CustomerService customerService;
+  private CustomerRepository customerRepository;
 
   @Mock
   private BankClient bankClient;
@@ -41,7 +42,7 @@ class AccountServiceTest {
     var customer = new Customer();
     var newAccount = new Account("bankname", customer);
     // and
-    when(customerService.findCustomer(anyString())).thenReturn(customer);
+    when(customerRepository.findByCpf(anyString())).thenReturn(Optional.of(customer));
     when(bankClient.findBankNameByCode(anyInt())).thenReturn("bankname");
     when(accountRepository.save(any(Account.class))).then(returnsFirstArg());
     // when
@@ -51,12 +52,24 @@ class AccountServiceTest {
   }
 
   @Test
+  void givenNonexistentCustomer_whenCreateAccount_thenThrowsCustomerNotFoundException() {
+    // given
+    var nonexistentCustomer = Optional.<Customer>empty();
+    // and
+    when(customerRepository.findByCpf(anyString())).thenReturn(nonexistentCustomer);
+    // then
+    assertThatThrownBy(() -> accountService.createAccount("xxx.xxx.xxx-xx", new AccountRequest(1)))
+      .isInstanceOf(CustomerNotFoundException.class);
+    verify(accountRepository, never()).save(any(Account.class));
+  }
+
+  @Test
   void whenFindAccount_thenReturnsFindedAccount() {
     // given
     var customer = new Customer();
     var account = new Account("bankname", customer);
     // and
-    when(customerService.findCustomer(anyString())).thenReturn(customer);
+    when(customerRepository.findByCpf(anyString())).thenReturn(Optional.of(customer));
     when(accountRepository.findById(anyLong())).thenReturn(Optional.of(account));
     // when
     var findedAccount = accountService.findAccount("xxx.xxx.xxx-xx", 1L);
@@ -65,11 +78,22 @@ class AccountServiceTest {
   }
 
   @Test
+  void givenNonexistentCustomer_whenFindAccount_thenThrowsCustomerNotFoundException() {
+    // given
+    var nonexistentCustomer = Optional.<Customer>empty();
+    // and
+    when(customerRepository.findByCpf(anyString())).thenReturn(nonexistentCustomer);
+    // then
+    assertThatThrownBy(() -> accountService.findAccount("xxx.xxx.xxx-xx", 1L))
+      .isInstanceOf(CustomerNotFoundException.class);
+  }
+
+  @Test
   void givenNonexistentAccount_whenFindAccount_thenThrowsAccountNotFoundException() {
     // given
     var nonexistentAccount = Optional.<Account>empty();
     // and
-    when(customerService.findCustomer(anyString())).thenReturn(new Customer());
+    when(customerRepository.findByCpf(anyString())).thenReturn(Optional.of(new Customer()));
     when(accountRepository.findById(anyLong())).thenReturn(nonexistentAccount);
     // then
     assertThatThrownBy(() -> accountService.findAccount("xxx.xxx.xxx-xx", 1L))
@@ -82,7 +106,7 @@ class AccountServiceTest {
     var customer = new Customer(1L, "", "", "", null);
     var account = new Account(1L, "bankname", new Customer(2L, "", "", "", null));
     // and
-    when(customerService.findCustomer(anyString())).thenReturn(customer);
+    when(customerRepository.findByCpf(anyString())).thenReturn(Optional.of(customer));
     when(accountRepository.findById(anyLong())).thenReturn(Optional.of(account));
     // then
     assertThatThrownBy(() -> accountService.findAccount("xxx.xxx.xxx-xx", 1L))
@@ -96,7 +120,7 @@ class AccountServiceTest {
     var oldAccount = new Account(1L, "bankname", customer);
     var newAccount = new Account(1L, "edited", customer);
     // and
-    when(customerService.findCustomer(anyString())).thenReturn(customer);
+    when(customerRepository.findByCpf(anyString())).thenReturn(Optional.of(customer));
     when(accountRepository.findById(anyLong())).thenReturn(Optional.of(oldAccount));
     when(bankClient.findBankNameByCode(anyInt())).thenReturn("edited");
     when(accountRepository.save(any(Account.class))).then(returnsFirstArg());
@@ -108,12 +132,24 @@ class AccountServiceTest {
   }
 
   @Test
+  void givenNonexistentCustomer_whenEditAccount_thenThrowsCustomerNotFoundException() {
+    // given
+    var nonexistentCustomer = Optional.<Customer>empty();
+    // and
+    when(customerRepository.findByCpf(anyString())).thenReturn(nonexistentCustomer);
+    // then
+    assertThatThrownBy(() -> accountService.editAccount("xxx.xxx.xxx-xx", 1L, new AccountRequest(2)))
+      .isInstanceOf(CustomerNotFoundException.class);
+    verify(accountRepository, never()).save(any(Account.class));
+  }
+
+  @Test
   void givenNonexistentAccount_whenEditAccount_thenThrowsAccountNotFoundException() {
     // given
     var customer = new Customer();
     var nonexistentAccount = Optional.<Account>empty();
     // and
-    when(customerService.findCustomer(anyString())).thenReturn(customer);
+    when(customerRepository.findByCpf(anyString())).thenReturn(Optional.of(customer));
     when(accountRepository.findById(anyLong())).thenReturn(nonexistentAccount);
     // then
     assertThatThrownBy(() -> accountService.editAccount("xxx.xxx.xxx-xx", 1L, new AccountRequest(2)))
@@ -127,7 +163,7 @@ class AccountServiceTest {
     var customer = new Customer(1L, "", "", "", null);
     var oldAccount = new Account(1L, "bankname", new Customer(2L, "", "", "", null));
     // and
-    when(customerService.findCustomer(anyString())).thenReturn(customer);
+    when(customerRepository.findByCpf(anyString())).thenReturn(Optional.of(customer));
     when(accountRepository.findById(anyLong())).thenReturn(Optional.of(oldAccount));
     // then
     assertThatThrownBy(() -> accountService.editAccount("xxx.xxx.xxx-xx", 1L, new AccountRequest(2)))
@@ -141,7 +177,7 @@ class AccountServiceTest {
     var customer = new Customer();
     var account = new Account(1L, "bankname", customer);
     // and
-    when(customerService.findCustomer(anyString())).thenReturn(customer);
+    when(customerRepository.findByCpf(anyString())).thenReturn(Optional.of(customer));
     when(accountRepository.findById(anyLong())).thenReturn(Optional.of(account));
     // when
     accountService.removeAccount("xxx.xxx.xxx-xx", 1L);
@@ -150,12 +186,24 @@ class AccountServiceTest {
   }
 
   @Test
+  void givenNonexistentCustomer_whenRemoveAccount_thenThrowsCustomerNotFoundException() {
+    // given
+    var nonexistentCustomer = Optional.<Customer>empty();
+    // and
+    when(customerRepository.findByCpf(anyString())).thenReturn(nonexistentCustomer);
+    // then
+    assertThatThrownBy(() -> accountService.removeAccount("xxx.xxx.xxx-xx", 1L))
+      .isInstanceOf(CustomerNotFoundException.class);
+    verify(accountRepository, never()).delete(any(Account.class));
+  }
+
+  @Test
   void givenNonexistentAccount_whenRemoveAccount_thenThrowsAccountNotFoundException() {
     // given
     var customer = new Customer();
     var nonexistentAccount = Optional.<Account>empty();
     // and
-    when(customerService.findCustomer(anyString())).thenReturn(customer);
+    when(customerRepository.findByCpf(anyString())).thenReturn(Optional.of(customer));
     when(accountRepository.findById(anyLong())).thenReturn(nonexistentAccount);
     // then
     assertThatThrownBy(() -> accountService.removeAccount("xxx.xxx.xxx-xx", 1L))
@@ -169,7 +217,7 @@ class AccountServiceTest {
     var customer = new Customer();
     var account = new Account(1L, "bankname", new Customer(2L, "", "", "", null));
     // and
-    when(customerService.findCustomer(anyString())).thenReturn(customer);
+    when(customerRepository.findByCpf(anyString())).thenReturn(Optional.of(customer));
     when(accountRepository.findById(anyLong())).thenReturn(Optional.of(account));
     // then
     assertThatThrownBy(() -> accountService.removeAccount("xxx.xxx.xxx-xx", 1L))
