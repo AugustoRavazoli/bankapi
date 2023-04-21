@@ -1,6 +1,7 @@
 package io.github.augustoravazoli.bankapi.transaction;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -15,6 +16,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Pageable;
 import io.github.augustoravazoli.bankapi.account.Account;
 import io.github.augustoravazoli.bankapi.account.AccountRepository;
 
@@ -144,6 +146,24 @@ class TransactionServiceTest {
     assertThatThrownBy(() -> transactionService.createTransferationTransaction(newTransaction))
       .isInstanceOf(InvalidAccountException.class);
     verify(transactionRepository, never()).save(any(Transaction.class));
+  }
+
+  @Test
+  void whenFindAllTransactions_thenReturnsFindedTransactions() {
+    // given
+    var transactions = List.of(
+      new Transaction(1L, BigDecimal.TEN, TransactionType.DEPOSIT, 1L, 1L),
+      new Transaction(2L, BigDecimal.TEN, TransactionType.WITHDRAWAL, 1L, 1L),
+      new Transaction(3L, BigDecimal.TEN, TransactionType.DEPOSIT, 1L, 1L),
+      new Transaction(4L, BigDecimal.TEN, TransactionType.WITHDRAWAL, 1L, 1L)
+    );
+    // and
+    when(transactionRepository.findAllByOriginAccountId(anyLong(), any(Pageable.class)))
+      .thenReturn(transactions);
+    // when
+    var findedTransactions = transactionService.findAllTransactions(1L, 0, 4);
+    // then
+    assertThat(findedTransactions).isEqualTo(transactions);
   }
 
 }

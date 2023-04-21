@@ -1,6 +1,9 @@
 package io.github.augustoravazoli.bankapi.transaction;
 
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import io.github.augustoravazoli.bankapi.account.AccountRepository;
@@ -53,5 +56,9 @@ class TransactionService {
     return transactionRepository.save(newTransaction);
   }
 
+  public List<Transaction> findAllTransactions(long accountId, int page, int size) {
+    var currentPage = PageRequest.of(page, size, Sort.by("date").ascending());
+    return transactionRepository.findAllByOriginAccountId(accountId, currentPage);
+  }
 
 }

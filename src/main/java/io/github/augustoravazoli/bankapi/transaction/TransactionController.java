@@ -1,13 +1,16 @@
 package io.github.augustoravazoli.bankapi.transaction;
 
+import java.util.List;
 import java.util.stream.Stream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import jakarta.validation.Valid;
 
@@ -83,6 +86,20 @@ class TransactionController {
       .buildAndExpand(savedTransaction.id())
       .toUri();
     return ResponseEntity.created(location).body(savedTransaction);
+  }
+
+  @GetMapping
+  public ResponseEntity<List<TransactionResponse>> findAllTransactions(
+    @RequestParam(name = "account-id") long accountId,
+    @RequestParam(name = "page") int page,
+    @RequestParam(name = "size") int size
+  ) {
+    var findedTransactions = transactionService
+      .findAllTransactions(accountId, page, size)
+      .stream()
+      .map(transactionMapper::toResponse)
+      .toList();
+    return ResponseEntity.ok().body(findedTransactions);
   }
 
 }
