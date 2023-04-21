@@ -1,5 +1,9 @@
 package io.github.augustoravazoli.bankapi;
 
+import static java.lang.annotation.ElementType.CONSTRUCTOR;
+import java.lang.annotation.Retention;
+import static java.lang.annotation.RetentionPolicy.CLASS;
+import java.lang.annotation.Target;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
@@ -18,5 +22,9 @@ public class Application {
   public WebClient webClient() {
     return WebClient.create();
   }
+
+  @Target(CONSTRUCTOR)
+  @Retention(CLASS)
+  public static @interface Default {}
 
 }

@@ -10,6 +10,9 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
+import io.github.augustoravazoli.bankapi.Application.Default;
 import io.github.augustoravazoli.bankapi.customer.Customer;
 
 @Entity
@@ -22,26 +25,28 @@ public class Account {
   @Column(nullable = false)
   private String bank;
 
+  @PositiveOrZero
   @Column(nullable = false)
   private BigDecimal balance;
 
   @Column(nullable = false)
   private LocalDate createdAt;
 
-  @ManyToOne(fetch = LAZY)
+  @ManyToOne(fetch = LAZY, optional = false)
   @JoinColumn(name = "account_id", nullable = false)
   private Customer owner;
 
-  protected Account() {}
+  public Account() {}
 
-  protected Account(String bankName, Customer owner) {
+  public Account(String bankName, Customer owner) {
     bank = bankName;
     balance = BigDecimal.ZERO;
     createdAt = LocalDate.now();
     setOwner(owner);
   }
 
-  protected Account(long id, String bank, Customer owner) {
+  @Default
+  public Account(Long id, String bank, Customer owner) {
     this(bank, owner);
     this.id = id;
   }
@@ -73,11 +78,31 @@ public class Account {
   protected void setOwner(Customer owner) {
     if (owner != null) {
       owner.addAccount(this);
-    }
-    else if (this.owner != null) {
+    } else if (this.owner != null) {
       this.owner.removeAccount(this);
     }
     this.owner = owner;
+  }
+
+  public void deposit(@Positive BigDecimal amount) {
+    balance = balance.add(amount);
+  }
+
+  public void withdraw(@Positive BigDecimal amount) {
+    if (amount.compareTo(balance) <= 0) {
+      balance = balance.subtract(amount);
+    } else {
+      throw new InsufficientBalanceException();
+    }
+  }
+
+  public void transfer(@Positive BigDecimal amount, Account destination) {
+    if (this.id != destination.id) {
+      this.withdraw(amount);
+      destination.deposit(amount);
+    } else {
+      throw new SelfTransferException();
+    }
   }
 
 }

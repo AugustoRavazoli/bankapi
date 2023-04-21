@@ -4,7 +4,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.ArrayList;
 import org.hibernate.annotations.NaturalId;
-import io.github.augustoravazoli.bankapi.account.Account;
+import org.hibernate.validator.constraints.br.CPF;
 import static jakarta.persistence.CascadeType.ALL;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -13,6 +13,11 @@ import jakarta.persistence.GeneratedValue;
 import static jakarta.persistence.GenerationType.IDENTITY;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Past;
+import jakarta.validation.constraints.Pattern;
+import io.github.augustoravazoli.bankapi.Application.Default;
+import io.github.augustoravazoli.bankapi.account.Account;
 
 @Entity
 public class Customer {
@@ -21,16 +26,23 @@ public class Customer {
   @GeneratedValue(strategy = IDENTITY)
   private Long id;
 
+  @Pattern(
+    regexp = "[A-Za-z\\s]*", 
+    message = "must contains only alphabetic characters and whitespaces"
+  )
   @Column(nullable = false)
   private String name;
 
+  @Email
   @Column(nullable = false, unique = true)
   private String email;
 
+  @CPF
   @NaturalId
   @Column(nullable = false, unique = true)
   private String cpf;
 
+  @Past
   @Column(nullable = false)
   private LocalDate birthDate;
 
@@ -39,7 +51,8 @@ public class Customer {
 
   public Customer() {}
 
-  public Customer(long id, String name, String email, String cpf, LocalDate birthDate) {
+  @Default
+  public Customer(Long id, String name, String email, String cpf, LocalDate birthDate) {
     this.id = id;
     this.name = name;
     this.email = email;
