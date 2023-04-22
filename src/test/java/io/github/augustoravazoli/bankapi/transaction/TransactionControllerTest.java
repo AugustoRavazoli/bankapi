@@ -116,20 +116,20 @@ class TransactionControllerTest extends ControllerTestTemplate {
     // given
     var findedTransactions = List.of(
       new Transaction(1L, BigDecimal.TEN, TransactionType.DEPOSIT, 1L, null),
-      new Transaction(2L, BigDecimal.TEN, TransactionType.WITHDRAWAL, 2L, null),
-      new Transaction(3L, BigDecimal.TEN, TransactionType.TRANSFERATION, 3L, 2L)
+      new Transaction(2L, BigDecimal.TEN, TransactionType.WITHDRAWAL, 1L, null),
+      new Transaction(3L, BigDecimal.TEN, TransactionType.TRANSFERATION, 1L, 2L)
     );
     var returnedTransactions = List.of(
       new TransactionResponse(1L, BigDecimal.TEN, TransactionType.DEPOSIT, LocalDate.now(), 1L, null),
-      new TransactionResponse(2L, BigDecimal.TEN, TransactionType.WITHDRAWAL, LocalDate.now(), 2L, null),
-      new TransactionResponse(3L, BigDecimal.TEN, TransactionType.TRANSFERATION, LocalDate.now(), 3L, 2L)
+      new TransactionResponse(2L, BigDecimal.TEN, TransactionType.WITHDRAWAL, LocalDate.now(), 1L, null),
+      new TransactionResponse(3L, BigDecimal.TEN, TransactionType.TRANSFERATION, LocalDate.now(), 1L, 2L)
     );
     // and
     when(transactionService.findAllTransactions(anyLong(), anyInt(), anyInt()))
       .thenReturn(findedTransactions);
     // when
     mvc.perform(
-      get("/api/v1/transactions?account-id={account-id}&page={page}&size={size}", 3L, 0, 4)
+      get("/api/v1/transactions?account-id={account-id}&page={page}&size={size}", 1L, 0, 4)
     )
     // then
     .andExpectAll(

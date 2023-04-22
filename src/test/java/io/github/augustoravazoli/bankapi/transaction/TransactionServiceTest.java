@@ -154,7 +154,7 @@ class TransactionServiceTest {
     var transactions = List.of(
       new Transaction(1L, BigDecimal.TEN, TransactionType.DEPOSIT, 1L, null),
       new Transaction(2L, BigDecimal.TEN, TransactionType.WITHDRAWAL, 1L, null),
-      new Transaction(3L, BigDecimal.TEN, TransactionType.TRANSFERATION, 3L, 2L)
+      new Transaction(3L, BigDecimal.TEN, TransactionType.TRANSFERATION, 1L, 2L)
     );
     // and
     when(transactionRepository.findAllByOriginAccountId(anyLong(), any(Pageable.class)))
