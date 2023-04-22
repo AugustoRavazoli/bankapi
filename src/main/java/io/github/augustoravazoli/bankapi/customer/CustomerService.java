@@ -2,6 +2,7 @@ package io.github.augustoravazoli.bankapi.customer;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 class CustomerService {
@@ -44,6 +45,7 @@ class CustomerService {
     return customerRepository.save(customer);
   }
 
+  @Transactional
   public void removeCustomer(String cpf) {
     if (!customerRepository.existsByCpf(cpf)) {
       throw new CustomerNotFoundException();

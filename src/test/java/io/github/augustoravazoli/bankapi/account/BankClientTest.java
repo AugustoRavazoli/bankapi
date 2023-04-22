@@ -61,7 +61,7 @@ class BankClientTest {
     // then
     assertThat(bankName).isEqualTo("bankname");
     assertThat(recordedRequest.getMethod()).isEqualTo("GET");
-    assertThat(recordedRequest.getPath()).isEqualTo("/banks/v1/" + code);
+    assertThat(recordedRequest.getPath()).isEqualTo("/api/banks/v1/" + code);
   }
 
   @Test

@@ -36,7 +36,7 @@ class TransactionServiceTest {
   void whenCreateDepositTransaction_thenReturnsCreatedTransaction() {
     // given
     var account = new Account(1L, "", null);
-    var newTransaction = new Transaction(1L, BigDecimal.TEN, null, 1L, 1L);
+    var newTransaction = new Transaction(1L, BigDecimal.TEN, null, 1L, null);
     // and
     when(accountRepository.findById(anyLong())).thenReturn(Optional.of(account));
     when(transactionRepository.save(any(Transaction.class))).then(returnsFirstArg());
@@ -55,7 +55,7 @@ class TransactionServiceTest {
   void givenNonexistentAccount_whenCreateDepositTransaction_thenThrowsInvalidAccountException() {
     // given
     var nonexistentAccount = Optional.<Account>empty();
-    var newTransaction = new Transaction(1L, BigDecimal.TEN, null, 1L, 1L);
+    var newTransaction = new Transaction(1L, BigDecimal.TEN, null, 1L, null);
     // and
     when(accountRepository.findById(anyLong())).thenReturn(nonexistentAccount);
     // then
@@ -68,7 +68,7 @@ class TransactionServiceTest {
   void whenCreateWithdrawalTransaction_thenReturnsCreatedTransaction() {
     // given
     var account = new Account(1L, "", null);
-    var newTransaction = new Transaction(1L, BigDecimal.TEN, null, 1L, 1L);
+    var newTransaction = new Transaction(1L, BigDecimal.TEN, null, 1L, null);
     // and
     account.deposit(BigDecimal.TEN);
     when(accountRepository.findById(anyLong())).thenReturn(Optional.of(account));
@@ -88,7 +88,7 @@ class TransactionServiceTest {
   void givenNonexistentAccount_whenCreateWithdrawalTransaction_thenThrowsInvalidAccountException() {
     // given
     var nonexistentAccount = Optional.<Account>empty();
-    var newTransaction = new Transaction(1L, BigDecimal.TEN, null, 1L, 1L);
+    var newTransaction = new Transaction(1L, BigDecimal.TEN, null, 1L, null);
     // and
     when(accountRepository.findById(anyLong())).thenReturn(nonexistentAccount);
     // then
@@ -152,10 +152,9 @@ class TransactionServiceTest {
   void whenFindAllTransactions_thenReturnsFindedTransactions() {
     // given
     var transactions = List.of(
-      new Transaction(1L, BigDecimal.TEN, TransactionType.DEPOSIT, 1L, 1L),
-      new Transaction(2L, BigDecimal.TEN, TransactionType.WITHDRAWAL, 1L, 1L),
-      new Transaction(3L, BigDecimal.TEN, TransactionType.DEPOSIT, 1L, 1L),
-      new Transaction(4L, BigDecimal.TEN, TransactionType.WITHDRAWAL, 1L, 1L)
+      new Transaction(1L, BigDecimal.TEN, TransactionType.DEPOSIT, 1L, null),
+      new Transaction(2L, BigDecimal.TEN, TransactionType.WITHDRAWAL, 1L, null),
+      new Transaction(3L, BigDecimal.TEN, TransactionType.TRANSFERATION, 3L, 2L)
     );
     // and
     when(transactionRepository.findAllByOriginAccountId(anyLong(), any(Pageable.class)))

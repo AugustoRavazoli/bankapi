@@ -23,7 +23,7 @@ class BankClient {
   public String findBankNameByCode(int code) {
     return client
       .get()
-      .uri(properties.baseUrl() + "/banks/v1/{code}", code)
+      .uri(properties.baseUrl() + "/api/banks/v1/{code}", code)
       .accept(APPLICATION_JSON)
       .retrieve()
       .onStatus(

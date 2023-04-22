@@ -40,9 +40,9 @@ class TransactionControllerTest extends ControllerTestTemplate {
   void whenCreateDepositTransaction_thenReturns201AndCreatedTransaction() throws Exception {
     // given
     var newTransaction = new TransactionRequest(BigDecimal.TEN, 1L, null);
-    var savedTransaction = new Transaction(1L, BigDecimal.TEN, TransactionType.DEPOSIT, 1L, 1L);
+    var savedTransaction = new Transaction(1L, BigDecimal.TEN, TransactionType.DEPOSIT, 1L, null);
     var returnedTransaction = new TransactionResponse(
-      1L, BigDecimal.TEN, TransactionType.DEPOSIT, LocalDate.now(), 1L, 1L
+      1L, BigDecimal.TEN, TransactionType.DEPOSIT, LocalDate.now(), 1L, null
     );
     // and
     when(transactionService.createDepositTransaction(any(Transaction.class)))
@@ -65,9 +65,9 @@ class TransactionControllerTest extends ControllerTestTemplate {
   void whenCreateWithdrawalTransaction_thenReturns201AndCreatedTransaction() throws Exception {
     // given
     var newTransaction = new TransactionRequest(BigDecimal.TEN, 1L, null);
-    var savedTransaction = new Transaction(1L, BigDecimal.TEN, TransactionType.DEPOSIT, 1L, 1L);
+    var savedTransaction = new Transaction(1L, BigDecimal.TEN, TransactionType.DEPOSIT, 1L, null);
     var returnedTransaction = new TransactionResponse(
-      1L, BigDecimal.TEN, TransactionType.DEPOSIT, LocalDate.now(), 1L, 1L
+      1L, BigDecimal.TEN, TransactionType.DEPOSIT, LocalDate.now(), 1L, null
     );
     // and
     when(transactionService.createWithdrawalTransaction(any(Transaction.class)))
@@ -115,12 +115,14 @@ class TransactionControllerTest extends ControllerTestTemplate {
   void whenFindAllTransactions_thenReturns200AndFindedTransactions() throws Exception {
     // given
     var findedTransactions = List.of(
-      new Transaction(1L, BigDecimal.TEN, TransactionType.DEPOSIT, 1L, 1L),
-      new Transaction(2L, BigDecimal.TEN, TransactionType.WITHDRAWAL, 1L, 1L)
+      new Transaction(1L, BigDecimal.TEN, TransactionType.DEPOSIT, 1L, null),
+      new Transaction(2L, BigDecimal.TEN, TransactionType.WITHDRAWAL, 2L, null),
+      new Transaction(3L, BigDecimal.TEN, TransactionType.TRANSFERATION, 3L, 2L)
     );
     var returnedTransactions = List.of(
-      new TransactionResponse(1L, BigDecimal.TEN, TransactionType.DEPOSIT, LocalDate.now(), 1L, 1L),
-      new TransactionResponse(2L, BigDecimal.TEN, TransactionType.WITHDRAWAL, LocalDate.now(), 1L, 1L)
+      new TransactionResponse(1L, BigDecimal.TEN, TransactionType.DEPOSIT, LocalDate.now(), 1L, null),
+      new TransactionResponse(2L, BigDecimal.TEN, TransactionType.WITHDRAWAL, LocalDate.now(), 2L, null),
+      new TransactionResponse(3L, BigDecimal.TEN, TransactionType.TRANSFERATION, LocalDate.now(), 3L, 2L)
     );
     // and
     when(transactionService.findAllTransactions(anyLong(), anyInt(), anyInt()))

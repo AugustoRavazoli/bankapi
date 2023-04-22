@@ -33,7 +33,6 @@ class Transaction {
   @Column(nullable = false)
   private Long originAccountId;
 
-  @Column(nullable = false)
   private Long destinationAccountId;
 
   public Transaction() {}
