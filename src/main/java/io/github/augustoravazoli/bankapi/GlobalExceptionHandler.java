@@ -29,7 +29,7 @@ class GlobalExceptionHandler {
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
   public ResponseEntity<ErrorResponse> handle(MethodArgumentNotValidException ex) {
-    var errorInfo = new ErrorResponse("validation errors on your request body", ex
+    var errorInfo = new ErrorResponse("validation errors on your request", ex
       .getBindingResult()
       .getFieldErrors()
       .stream()
@@ -46,7 +46,7 @@ class GlobalExceptionHandler {
 
   @ExceptionHandler(ConstraintViolationException.class)
   public ResponseEntity<ErrorResponse> handle(ConstraintViolationException ex) {
-    var errorInfo = new ErrorResponse("validation errors on your request query parameters", ex
+    var errorInfo = new ErrorResponse("validation errors on your request", ex
       .getConstraintViolations()
       .stream()
       .map(violation -> new ErrorDetails(

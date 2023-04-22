@@ -77,7 +77,7 @@ class CustomerControllerTest extends ControllerTestTemplate {
     // then
     .andExpectAll(
       status().isUnprocessableEntity(),
-      jsonPath("$.message", is("validation errors on your request body"))
+      jsonPath("$.message", is("validation errors on your request"))
     )
     .andDo(document("customer/error"));
   }
@@ -116,7 +116,7 @@ class CustomerControllerTest extends ControllerTestTemplate {
     // then
     .andExpectAll(
       status().isUnprocessableEntity(),
-      jsonPath("$.message", is("validation errors on your request query parameters"))
+      jsonPath("$.message", is("validation errors on your request"))
     );
   }
 

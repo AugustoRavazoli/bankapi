@@ -42,7 +42,7 @@ public abstract class ControllerTestTemplate {
 
   private static final OperationPreprocessor[] preprocessors = {
     modifyUris().host("example.com").removePort(),
-    modifyHeaders().remove("Content-Disposition"),
+    modifyHeaders().remove("Content-Disposition").remove("Vary"),
     prettyPrint(),
     hideCpf()
   };
