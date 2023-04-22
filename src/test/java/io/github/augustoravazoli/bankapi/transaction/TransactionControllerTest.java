@@ -65,9 +65,9 @@ class TransactionControllerTest extends ControllerTestTemplate {
   void whenCreateWithdrawalTransaction_thenReturns201AndCreatedTransaction() throws Exception {
     // given
     var newTransaction = new TransactionRequest(BigDecimal.TEN, 1L, null);
-    var savedTransaction = new Transaction(1L, BigDecimal.TEN, TransactionType.DEPOSIT, 1L, null);
+    var savedTransaction = new Transaction(1L, BigDecimal.TEN, TransactionType.WITHDRAWAL, 1L, null);
     var returnedTransaction = new TransactionResponse(
-      1L, BigDecimal.TEN, TransactionType.DEPOSIT, LocalDate.now(), 1L, null
+      1L, BigDecimal.TEN, TransactionType.WITHDRAWAL, LocalDate.now(), 1L, null
     );
     // and
     when(transactionService.createWithdrawalTransaction(any(Transaction.class)))
