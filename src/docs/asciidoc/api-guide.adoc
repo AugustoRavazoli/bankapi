@@ -1,0 +1,206 @@
+= Bank API
+Augusto Ravazoli; Version 1.0.0;
+:doctype: book
+:icons: font
+:source-highlighter: highlightjs
+:toc: left
+:toclevels: 3
+:sectlinks:
+:sectnums:
+
+== Introduction
+
+Bank API is a simple API for managing customers, their accounts and making transactions between them,
+its supports some operations like withdrawals, deposits and transferations.
+
+=== Usage of HTTP Verbs
+
+The following table describes how the Bank API interprets the HTTP verbs.
+
+.HTTP Verbs
+|===
+|HTTP Verb | Usage
+
+|GET
+|GET is used to retrieve information.
+
+|POST
+|POST is used to create resources.
+
+|PUT
+|PUT is used to update resources.
+
+|DELETE
+|DELETE is used to delete resources.
+|===
+
+=== Error Handling
+
+==== Successful Requests
+
+Successful requests return a response with HTTP status 200 (OK) or 201 (CREATED) or 204 (NO CONTENT) 
+and contain a JSON structure in the response body (except for 204 status responses).
+
+==== Validation Errors
+
+POST and PUT requests against the Bank API expect a JSON structure in the request body,
+GET, PUT and DELETE requests also expect to have a valid path variable.
+If the JSON structure contains values that are invalid, 
+the API returns a response with HTTP status 422 (UNPROCESSABLE ENTITY) that contains
+an error JSON structure object that looks like this:
+
+include::{snippets}/customer/error/http-response.adoc[]
+
+==== General Errors
+
+If some unexpected error occurs during the processing of a request, 
+the Bank API returns a response with HTTP status 500 (internal server error).
+
+== Resources
+
+=== Customer
+
+==== Structure
+[cols="15,15,25,45"]
+include::{snippets}/customer/create/request-fields.adoc[]
+
+anchor:cpf[]
+[NOTE]
+=====
+.CPF
+The Individual Taxpayer Registration (CPF) is the registry maintained
+by the Federal Revenue of Brazil, where any natural person must register once,
+regardless of age or nationality. Each registered person is identified 
+in the country by a unique 11-digit number. Learn more here:
+https://www.gov.br/mre/pt-br/embaixada-helsinque/consular-services/cpf-taxpayer-registry-for-individuals.
+=====
+
+==== Creating customer
+
+Example request
+include::{snippets}/customer/create/http-request.adoc[]
+
+Example response
+include::{snippets}/customer/create/http-response.adoc[]
+
+==== Finding customer
+
+Example request
+include::{snippets}/customer/find/http-request.adoc[]
+
+Example response
+include::{snippets}/customer/find/http-response.adoc[]
+
+==== Editing customer
+
+Example request
+include::{snippets}/customer/edit/http-request.adoc[]
+
+Example response
+include::{snippets}/customer/edit/http-response.adoc[]
+
+==== Removing customer
+
+Example request
+include::{snippets}/customer/remove/http-request.adoc[]
+
+Example response
+include::{snippets}/customer/remove/http-response.adoc[]
+
+=== Account
+
+==== Structure
+[cols="15,15,25,45"]
+include::{snippets}/account/create/request-fields.adoc[]
+
+anchor:bank-code[]
+[NOTE]
+=====
+.Bank code
+Bank code should be a valid brazilian bank code, you can check all valid bank codes here:
+https://bank.codes/numero-do-banco/bank/.
+=====
+
+==== Creating account
+
+Example request
+include::{snippets}/account/create/http-request.adoc[]
+
+Example response
+include::{snippets}/account/create/http-response.adoc[]
+
+==== Finding account
+
+Example request
+include::{snippets}/account/find/http-request.adoc[]
+
+Example response
+include::{snippets}/account/find/http-response.adoc[]
+
+==== Editing account
+
+Example request
+include::{snippets}/account/edit/http-request.adoc[]
+
+Example response
+include::{snippets}/account/edit/http-response.adoc[]
+
+==== Removing account
+
+Example request
+include::{snippets}/account/remove/http-request.adoc[]
+
+Example response
+include::{snippets}/account/remove/http-response.adoc[]
+
+=== Transaction
+
+==== Structure
+[cols="15,15,25,45"]
+include::{snippets}/transaction/create/transfer/request-fields.adoc[]
+
+anchor:accounts-id[]
+[NOTE]
+=====
+.Accounts id
+When performing deposits or withdrawals transactions, the destination account id should be null,
+however, when performing transferations transactions, the destination account id shoud not be null
+and should be different from origin account id.
+=====
+
+==== Creating transaction
+
+===== Deposit
+
+Example request
+include::{snippets}/transaction/create/deposit/http-request.adoc[]
+
+Example response
+include::{snippets}/transaction/create/deposit/http-response.adoc[]
+
+===== Withdrawal
+
+Example request
+include::{snippets}/transaction/create/withdraw/http-request.adoc[]
+
+Example response
+include::{snippets}/transaction/create/withdraw/http-response.adoc[]
+
+===== Transferation
+
+Example request
+include::{snippets}/transaction/create/transfer/http-request.adoc[]
+
+Example response
+include::{snippets}/transaction/create/transfer/http-response.adoc[]
+
+==== Finding all transactions
+
+Parameters
+include::{snippets}/transaction/find-all/query-parameters.adoc[]
+
+Example request
+include::{snippets}/transaction/find-all/http-request.adoc[]
+
+Example response
+include::{snippets}/transaction/find-all/http-response.adoc[]
