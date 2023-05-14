@@ -9,8 +9,8 @@ Spring Rest Docs, PostgreSQL, JUnit and Mockito.
 
 ### Prerequisites
 
-* Java 17+
-* Maven
+* Java 17
+* PostgreSQL
 
 ### Installing
 
@@ -26,10 +26,24 @@ Go to the project directory
   cd bankapi
 ```
 
+Configure a PostgreSQL database in the `application.properties` file located under `src/main/resources`
+
+```
+  spring.datasource.url=jdbc:postgresql://localhost:5432/database
+  spring.datasource.username=username
+  spring.datasource.password=password
+```
+
 Start the application
 
 ```bash
-  mvn spring-boot:run
+  ./mvnw spring-boot:run
+```
+
+If you are using Windows, run this instead
+
+```cmd
+  mvnw.cmd spring-boot:run
 ```
 
 ### Documentation
