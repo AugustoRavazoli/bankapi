@@ -2,8 +2,8 @@
 
 Bank API is a simple API for managing customers, their accounts and making transactions between them,
 its supports some operations, like withdrawals, deposits and transferations. Its also consumes external
-REST services. It's made using Spring Boot, Spring MVC, Spring Data JPA, Spring Rest Docs,
-Bean Validation, MapStruct, H2Database, JUnit and Mockito.
+REST services. It's made using Spring Boot, Spring MVC, Spring Data JPA, 
+Spring Rest Docs, PostgreSQL, JUnit and Mockito.
 
 ## Getting Started
 
