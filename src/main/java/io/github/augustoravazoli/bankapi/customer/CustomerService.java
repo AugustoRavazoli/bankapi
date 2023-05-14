@@ -25,15 +25,11 @@ class CustomerService {
   }
 
   public Customer findCustomer(String cpf) {
-    return customerRepository
-      .findByCpf(cpf)
-      .orElseThrow(CustomerNotFoundException::new);
+    return getCustomerByCpf(cpf);
   }
 
   public Customer editCustomer(String cpf, Customer newCustomer) {
-    var customer = customerRepository
-      .findByCpf(cpf)
-      .orElseThrow(CustomerNotFoundException::new);
+    var customer = getCustomerByCpf(cpf);
     var emailExists = customerRepository.existsByEmail(newCustomer.getEmail());
     var emailChanged = !customer.getEmail().equals(newCustomer.getEmail());
     if (emailChanged && emailExists) {
@@ -51,6 +47,12 @@ class CustomerService {
       throw new CustomerNotFoundException();
     }
     customerRepository.deleteByCpf(cpf);
+  }
+
+  private Customer getCustomerByCpf(String cpf) {
+    return customerRepository
+      .findByCpf(cpf)
+      .orElseThrow(CustomerNotFoundException::new);
   }
 
 }

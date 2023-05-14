@@ -1,5 +1,6 @@
 package io.github.augustoravazoli.bankapi.transaction;
 
+import java.net.URI;
 import java.util.List;
 import java.util.stream.Stream;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,18 +36,9 @@ class TransactionController {
   @PostMapping("/deposits")
   public ResponseEntity<TransactionResponse> createDepositTransaction(
     @Valid @RequestBody TransactionRequest newTransaction
-  ) {
-    var savedTransaction = Stream.of(newTransaction)
-      .map(transactionMapper::toEntity)
-      .map(transactionService::createDepositTransaction)
-      .map(transactionMapper::toResponse)
-      .findFirst()
-      .get();
-    var location = ServletUriComponentsBuilder
-      .fromCurrentRequest()
-      .path("/{id}")
-      .buildAndExpand(savedTransaction.id())
-      .toUri();
+  ) { 
+    var savedTransaction = createTransaction(newTransaction, TransactionType.DEPOSIT);
+    var location = getLocation(savedTransaction.id());
     return ResponseEntity.created(location).body(savedTransaction);
   }
 
@@ -55,17 +47,8 @@ class TransactionController {
   public ResponseEntity<TransactionResponse> createWithdrawalTransaction(
     @Valid @RequestBody TransactionRequest newTransaction
   ) {
-    var savedTransaction = Stream.of(newTransaction)
-      .map(transactionMapper::toEntity)
-      .map(transactionService::createWithdrawalTransaction)
-      .map(transactionMapper::toResponse)
-      .findFirst()
-      .get();
-    var location = ServletUriComponentsBuilder
-      .fromCurrentRequest()
-      .path("/{id}")
-      .buildAndExpand(savedTransaction.id())
-      .toUri();
+    var savedTransaction = createTransaction(newTransaction, TransactionType.WITHDRAWAL);
+    var location = getLocation(savedTransaction.id());
     return ResponseEntity.created(location).body(savedTransaction);
   }
 
@@ -74,18 +57,34 @@ class TransactionController {
   public ResponseEntity<TransactionResponse> createTransferationTransaction(
     @Valid @RequestBody TransactionRequest newTransaction
   ) {
-    var savedTransaction = Stream.of(newTransaction)
+    var savedTransaction = createTransaction(newTransaction, TransactionType.TRANSFERATION);
+    var location = getLocation(savedTransaction.id());
+    return ResponseEntity.created(location).body(savedTransaction);
+  }
+
+  private TransactionResponse createTransaction(
+    TransactionRequest newTransaction,
+    TransactionType transactionType
+  ) {
+    return Stream
+      .of(newTransaction)
       .map(transactionMapper::toEntity)
-      .map(transactionService::createTransferationTransaction)
+      .map(switch (transactionType) {
+        case DEPOSIT -> transactionService::createDepositTransaction;
+        case WITHDRAWAL -> transactionService::createWithdrawalTransaction;
+        case TRANSFERATION -> transactionService::createTransferationTransaction;
+      })
       .map(transactionMapper::toResponse)
       .findFirst()
       .get();
-    var location = ServletUriComponentsBuilder
+  }
+
+  private URI getLocation(long id) {
+    return ServletUriComponentsBuilder
       .fromCurrentRequest()
       .path("/{id}")
-      .buildAndExpand(savedTransaction.id())
+      .buildAndExpand(id)
       .toUri();
-    return ResponseEntity.created(location).body(savedTransaction);
   }
 
   @GetMapping

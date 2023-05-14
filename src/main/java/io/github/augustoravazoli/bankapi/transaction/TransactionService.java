@@ -6,6 +6,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import io.github.augustoravazoli.bankapi.account.Account;
 import io.github.augustoravazoli.bankapi.account.AccountRepository;
 
 @Service
@@ -25,9 +26,7 @@ class TransactionService {
 
   @Transactional
   public Transaction createDepositTransaction(Transaction newTransaction) {
-    var account = accountRepository
-      .findById(newTransaction.getOriginAccountId())
-      .orElseThrow(() -> new InvalidAccountException("origin account doesn't exists"));
+    var account = getOriginAccountById(newTransaction.getOriginAccountId());
     account.deposit(newTransaction.getAmount());
     newTransaction.setType(TransactionType.DEPOSIT);
     return transactionRepository.save(newTransaction);
@@ -35,9 +34,7 @@ class TransactionService {
 
   @Transactional
   public Transaction createWithdrawalTransaction(Transaction newTransaction) {
-    var account = accountRepository
-      .findById(newTransaction.getOriginAccountId())
-      .orElseThrow(() -> new InvalidAccountException("origin account doesn't exists"));
+    var account = getOriginAccountById(newTransaction.getOriginAccountId());
     account.withdraw(newTransaction.getAmount());
     newTransaction.setType(TransactionType.WITHDRAWAL);
     return transactionRepository.save(newTransaction);
@@ -45,12 +42,8 @@ class TransactionService {
 
   @Transactional
   public Transaction createTransferationTransaction(Transaction newTransaction) {
-    var origin = accountRepository
-      .findById(newTransaction.getOriginAccountId())
-      .orElseThrow(() -> new InvalidAccountException("origin account doesn't exists"));
-    var destination = accountRepository
-      .findById(newTransaction.getDestinationAccountId())
-      .orElseThrow(() -> new InvalidAccountException("destination account doesn't exists"));
+    var origin = getOriginAccountById(newTransaction.getOriginAccountId());
+    var destination = getDestinationAccountById(newTransaction.getDestinationAccountId());
     origin.transfer(newTransaction.getAmount(), destination);
     newTransaction.setType(TransactionType.TRANSFERATION);
     return transactionRepository.save(newTransaction);
@@ -59,6 +52,18 @@ class TransactionService {
   public List<Transaction> findAllTransactions(long accountId, int page, int size) {
     var currentPage = PageRequest.of(page, size, Sort.by("date").ascending());
     return transactionRepository.findAllByOriginAccountId(accountId, currentPage);
+  }
+
+  private Account getOriginAccountById(long id) {
+    return accountRepository
+      .findById(id)
+      .orElseThrow(() -> new InvalidAccountException("origin account doesn't exists"));
+  }
+
+  private Account getDestinationAccountById(long id) {
+    return accountRepository
+      .findById(id)
+      .orElseThrow(() -> new InvalidAccountException("destination account doesn't exists"));
   }
 
 }
