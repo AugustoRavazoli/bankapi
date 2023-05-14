@@ -41,11 +41,11 @@ class TransactionService {
   }
 
   @Transactional
-  public Transaction createTransferationTransaction(Transaction newTransaction) {
+  public Transaction createTransferTransaction(Transaction newTransaction) {
     var origin = getOriginAccountById(newTransaction.getOriginAccountId());
     var destination = getDestinationAccountById(newTransaction.getDestinationAccountId());
     origin.transfer(newTransaction.getAmount(), destination);
-    newTransaction.setType(TransactionType.TRANSFERATION);
+    newTransaction.setType(TransactionType.TRANSFER);
     return transactionRepository.save(newTransaction);
   }
 

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 enum TransactionType {
 
-  TRANSFERATION,
+  TRANSFER,
   DEPOSIT,
   WITHDRAWAL;
 

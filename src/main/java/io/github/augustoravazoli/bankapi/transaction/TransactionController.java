@@ -53,11 +53,11 @@ class TransactionController {
   }
 
   @Validated(OnTransfer.class)
-  @PostMapping("/transferations")
-  public ResponseEntity<TransactionResponse> createTransferationTransaction(
+  @PostMapping("/transfers")
+  public ResponseEntity<TransactionResponse> createTransferTransaction(
     @Valid @RequestBody TransactionRequest newTransaction
   ) {
-    var savedTransaction = createTransaction(newTransaction, TransactionType.TRANSFERATION);
+    var savedTransaction = createTransaction(newTransaction, TransactionType.TRANSFER);
     var location = getLocation(savedTransaction.id());
     return ResponseEntity.created(location).body(savedTransaction);
   }
@@ -72,7 +72,7 @@ class TransactionController {
       .map(switch (transactionType) {
         case DEPOSIT -> transactionService::createDepositTransaction;
         case WITHDRAWAL -> transactionService::createWithdrawalTransaction;
-        case TRANSFERATION -> transactionService::createTransferationTransaction;
+        case TRANSFER -> transactionService::createTransferTransaction;
       })
       .map(transactionMapper::toResponse)
       .findFirst()

@@ -87,25 +87,25 @@ class TransactionControllerTest extends ControllerTestTemplate {
   }
 
   @Test
-  void whenCreateTransferationTransaction_thenReturns201AndCreatedTransaction() throws Exception {
+  void whenCreateTransferTransaction_thenReturns201AndCreatedTransaction() throws Exception {
     // given
     var newTransaction = new TransactionRequest(BigDecimal.TEN, 1L, 2L);
-    var savedTransaction = new Transaction(1L, BigDecimal.TEN, TransactionType.TRANSFERATION, 1L, 2L);
+    var savedTransaction = new Transaction(1L, BigDecimal.TEN, TransactionType.TRANSFER, 1L, 2L);
     var returnedTransaction = new TransactionResponse(
-      1L, BigDecimal.TEN, TransactionType.TRANSFERATION, LocalDate.now(), 1L, 2L
+      1L, BigDecimal.TEN, TransactionType.TRANSFER, LocalDate.now(), 1L, 2L
     );
     // and
-    when(transactionService.createTransferationTransaction(any(Transaction.class)))
+    when(transactionService.createTransferTransaction(any(Transaction.class)))
       .thenReturn(savedTransaction);
     // when
-    mvc.perform(post("/api/v1/transactions/transferations")
+    mvc.perform(post("/api/v1/transactions/transfers")
       .content(toJson(newTransaction))
       .contentType(APPLICATION_JSON)
     )
     // then
     .andExpectAll(
       status().isCreated(),
-      header().string(LOCATION, endsWith("/api/v1/transactions/transferations/" + returnedTransaction.id())),
+      header().string(LOCATION, endsWith("/api/v1/transactions/transfers/" + returnedTransaction.id())),
       content().json(toJson(returnedTransaction))
     )
     .andDo(document("transaction/create/transfer", transferTransactionSnippet()));
@@ -117,12 +117,12 @@ class TransactionControllerTest extends ControllerTestTemplate {
     var findedTransactions = List.of(
       new Transaction(1L, BigDecimal.TEN, TransactionType.DEPOSIT, 1L, null),
       new Transaction(2L, BigDecimal.TEN, TransactionType.WITHDRAWAL, 1L, null),
-      new Transaction(3L, BigDecimal.TEN, TransactionType.TRANSFERATION, 1L, 2L)
+      new Transaction(3L, BigDecimal.TEN, TransactionType.TRANSFER, 1L, 2L)
     );
     var returnedTransactions = List.of(
       new TransactionResponse(1L, BigDecimal.TEN, TransactionType.DEPOSIT, LocalDate.now(), 1L, null),
       new TransactionResponse(2L, BigDecimal.TEN, TransactionType.WITHDRAWAL, LocalDate.now(), 1L, null),
-      new TransactionResponse(3L, BigDecimal.TEN, TransactionType.TRANSFERATION, LocalDate.now(), 1L, 2L)
+      new TransactionResponse(3L, BigDecimal.TEN, TransactionType.TRANSFER, LocalDate.now(), 1L, 2L)
     );
     // and
     when(transactionService.findAllTransactions(anyLong(), anyInt(), anyInt()))

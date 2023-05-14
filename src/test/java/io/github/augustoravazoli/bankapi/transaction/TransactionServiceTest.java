@@ -98,7 +98,7 @@ class TransactionServiceTest {
   }
 
   @Test @SuppressWarnings("unchecked")
-  void whenCreateTransferationTransaction_thenReturnsCreatedTransaction() {
+  void whenCreateTransferTransaction_thenReturnsCreatedTransaction() {
     // given
     var origin = new Account(1L, "", null);
     var destination = new Account(2L, "", null);
@@ -108,7 +108,7 @@ class TransactionServiceTest {
     when(accountRepository.findById(anyLong())).thenReturn(Optional.of(origin), Optional.of(destination));
     when(transactionRepository.save(any(Transaction.class))).then(returnsFirstArg());
     // when
-    var savedTransaction = transactionService.createTransferationTransaction(newTransaction);
+    var savedTransaction = transactionService.createTransferTransaction(newTransaction);
     // then
     assertThat(savedTransaction)
       .usingRecursiveComparison()
@@ -116,24 +116,24 @@ class TransactionServiceTest {
       .isEqualTo(newTransaction);
     assertThat(origin.getBalance()).isEqualTo(BigDecimal.ZERO);
     assertThat(destination.getBalance()).isEqualTo(BigDecimal.TEN);
-    assertThat(savedTransaction.getType()).isEqualTo(TransactionType.TRANSFERATION);
+    assertThat(savedTransaction.getType()).isEqualTo(TransactionType.TRANSFER);
   }
 
   @Test
-  void givenNonexistentOriginAccount_whenCreateTransferationTransaction_thenThrowsInvalidAccountException() {
+  void givenNonexistentOriginAccount_whenCreateTransferTransaction_thenThrowsInvalidAccountException() {
     // given
     var nonexistentOriginAccount = Optional.<Account>empty();
     var newTransaction = new Transaction(1L, BigDecimal.TEN, null, 1L, 1L);
     // and
     when(accountRepository.findById(anyLong())).thenReturn(nonexistentOriginAccount);
     // then
-    assertThatThrownBy(() -> transactionService.createTransferationTransaction(newTransaction))
+    assertThatThrownBy(() -> transactionService.createTransferTransaction(newTransaction))
       .isInstanceOf(InvalidAccountException.class);
     verify(transactionRepository, never()).save(any(Transaction.class));
   }
 
   @Test @SuppressWarnings("unchecked")
-  void givenNonexistentDestinationAccount_whenCreateTransferationTransaction_thenThrowsInvalidAccountException() {
+  void givenNonexistentDestinationAccount_whenCreateTransferTransaction_thenThrowsInvalidAccountException() {
     // given
     var originAccount = new Account(1L, "", null);
     var nonexistentDestinationAccount = Optional.<Account>empty();
@@ -143,7 +143,7 @@ class TransactionServiceTest {
       Optional.of(originAccount), nonexistentDestinationAccount
     );
     // then
-    assertThatThrownBy(() -> transactionService.createTransferationTransaction(newTransaction))
+    assertThatThrownBy(() -> transactionService.createTransferTransaction(newTransaction))
       .isInstanceOf(InvalidAccountException.class);
     verify(transactionRepository, never()).save(any(Transaction.class));
   }
@@ -154,7 +154,7 @@ class TransactionServiceTest {
     var transactions = List.of(
       new Transaction(1L, BigDecimal.TEN, TransactionType.DEPOSIT, 1L, null),
       new Transaction(2L, BigDecimal.TEN, TransactionType.WITHDRAWAL, 1L, null),
-      new Transaction(3L, BigDecimal.TEN, TransactionType.TRANSFERATION, 1L, 2L)
+      new Transaction(3L, BigDecimal.TEN, TransactionType.TRANSFER, 1L, 2L)
     );
     // and
     when(transactionRepository.findAllByOriginAccountId(anyLong(), any(Pageable.class)))
